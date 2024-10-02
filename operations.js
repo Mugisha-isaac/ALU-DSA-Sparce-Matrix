@@ -35,10 +35,7 @@ const readMatrixFromFile = (filePath) => {
 };
 
 const addMatrices = (matrix1, matrix2) => {
-  if (
-    matrix1.numRows !== matrix2.numRows ||
-    matrix1.numCols !== matrix2.numCols
-  ) {
+  if (matrix1.numRows !== matrix2.numRows || matrix1.numCols !== matrix2.numCols) {
     throw new Error("Matrices must have the same dimensions");
   }
 
@@ -47,6 +44,7 @@ const addMatrices = (matrix1, matrix2) => {
     numCols: matrix1.numCols,
     elements: [],
   };
+
   const matrix2Elements = matrix2.elements.reduce((acc, element) => {
     acc[`${element.row},${element.col}`] = element.value;
     return acc;
@@ -59,16 +57,24 @@ const addMatrices = (matrix1, matrix2) => {
       col: element.col,
       value: element.value + value2,
     });
+    delete matrix2Elements[`${element.row},${element.col}`];
+  }
+
+  for (const [key, value] of Object.entries(matrix2Elements)) {
+    const [row, col] = key.split(",").map(Number);
+    resultMatrix.elements.push({
+      row,
+      col,
+      value,
+    });
   }
 
   return resultMatrix;
 };
 
+
 const subtractMatrices = (matrix1, matrix2) => {
-  if (
-    matrix1.numRows !== matrix2.numRows ||
-    matrix1.numCols !== matrix2.numCols
-  ) {
+  if (matrix1.numRows !== matrix2.numRows || matrix1.numCols !== matrix2.numCols) {
     throw new Error("Matrices must have the same dimensions");
   }
 
@@ -77,6 +83,7 @@ const subtractMatrices = (matrix1, matrix2) => {
     numCols: matrix1.numCols,
     elements: [],
   };
+
   const matrix2Elements = matrix2.elements.reduce((acc, element) => {
     acc[`${element.row},${element.col}`] = element.value;
     return acc;
@@ -89,16 +96,25 @@ const subtractMatrices = (matrix1, matrix2) => {
       col: element.col,
       value: element.value - value2,
     });
+    delete matrix2Elements[`${element.row},${element.col}`];
+  }
+
+  for (const [key, value] of Object.entries(matrix2Elements)) {
+    const [row, col] = key.split(",").map(Number);
+    resultMatrix.elements.push({
+      row,
+      col,
+      value: -value,
+    });
   }
 
   return resultMatrix;
 };
 
+
 const multiplyMatrices = (matrix1, matrix2) => {
   if (matrix1.numCols !== matrix2.numRows) {
-    throw new Error(
-      "Matrix1 number of columns must be equal to matrix2 number of rows"
-    );
+    throw new Error("Matrix1 number of columns must be equal to matrix2 number of rows");
   }
 
   const resultMatrix = {
@@ -106,22 +122,40 @@ const multiplyMatrices = (matrix1, matrix2) => {
     numCols: matrix2.numCols,
     elements: [],
   };
-  const matrix2Elements = matrix2.elements.reduce((acc, element) => {
-    acc[`${element.row},${element.col}`] = element.value;
+
+  const matrix2ElementsByRow = matrix2.elements.reduce((acc, element) => {
+    if (!acc[element.row]) acc[element.row] = {};
+    acc[element.row][element.col] = element.value;
     return acc;
   }, {});
 
-  for (const element of matrix1.elements) {
-    const value2 = matrix2Elements[`${element.row},${element.col}`] || 0;
-    resultMatrix.elements.push({
-      row: element.row,
-      col: element.col,
-      value: element.value * value2,
-    });
+  const resultElements = {};
+
+  for (const element1 of matrix1.elements) {
+    const row = element1.row;
+    const col1 = element1.col;
+
+    if (matrix2ElementsByRow[col1]) {
+      for (const [col2, value2] of Object.entries(matrix2ElementsByRow[col1])) {
+        const key = `${row},${col2}`;
+        if (!resultElements[key]) {
+          resultElements[key] = 0;
+        }
+        resultElements[key] += element1.value * value2;
+      }
+    }
+  }
+
+  for (const [key, value] of Object.entries(resultElements)) {
+    const [row, col] = key.split(",").map(Number);
+    if (value !== 0) {
+      resultMatrix.elements.push({ row, col, value });
+    }
   }
 
   return resultMatrix;
 };
+
 
 const transposeMatrix = (matrix) => {
   const transposeMatrix = {
