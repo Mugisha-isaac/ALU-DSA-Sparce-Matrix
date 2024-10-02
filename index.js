@@ -19,6 +19,7 @@ function getUserInput() {
 async function main() {
   const matrix1 = operations.readMatrixFromFile("matrixfile1.txt");
   const matrix2 = operations.readMatrixFromFile("matrixfile2.txt");
+  const matrix2Transposed = operations.transposeMatrix(matrix2);
 
   const operation = await getUserInput();
 
@@ -30,7 +31,7 @@ async function main() {
       console.log(operations.subtractMatrices(matrix1, matrix2));
       break;
     case "multiply":
-      console.log(operations.multiplyMatrices(matrix1, matrix2));
+      console.log(operations.multiplyMatrices(matrix1, matrix2Transposed));
       break;
     default:
       console.error("Invalid operation:", operation);

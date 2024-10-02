@@ -65,79 +65,86 @@ const addMatrices = (matrix1, matrix2) => {
 };
 
 const subtractMatrices = (matrix1, matrix2) => {
-    if (
-        matrix1.numRows !== matrix2.numRows ||
-        matrix1.numCols !== matrix2.numCols
-    ) {
-        throw new Error("Matrices must have the same dimensions");
-    }
-    
-    const resultMatrix = {
-        numRows: matrix1.numRows,
-        numCols: matrix1.numCols,
-        elements: [],
-    };
-    const matrix2Elements = matrix2.elements.reduce((acc, element) => {
-        acc[`${element.row},${element.col}`] = element.value;
-        return acc;
-    }, {});
-    
-    for (const element of matrix1.elements) {
-        const value2 = matrix2Elements[`${element.row},${element.col}`] || 0;
-        resultMatrix.elements.push({
-        row: element.row,
-        col: element.col,
-        value: element.value - value2,
-        });
-    }
-    
-    return resultMatrix;
-}
-
-const multiplyMatrices = (matrix1, matrix2) => {
-  if (matrix1.numCols !== matrix2.numRows) {
-      throw new Error("Matrix1 number of columns must be equal to matrix2 number of rows");
+  if (
+    matrix1.numRows !== matrix2.numRows ||
+    matrix1.numCols !== matrix2.numCols
+  ) {
+    throw new Error("Matrices must have the same dimensions");
   }
-  
+
   const resultMatrix = {
-      numRows: matrix1.numRows,
-      numCols: matrix2.numCols,
-      elements: [],
+    numRows: matrix1.numRows,
+    numCols: matrix1.numCols,
+    elements: [],
   };
-  
-  const matrix2ElementsByCol = matrix2.elements.reduce((acc, element) => {
-      if (!acc[element.col]) acc[element.col] = [];
-      acc[element.col].push(element);
-      return acc;
+  const matrix2Elements = matrix2.elements.reduce((acc, element) => {
+    acc[`${element.row},${element.col}`] = element.value;
+    return acc;
   }, {});
 
   for (const element of matrix1.elements) {
-      for (let col = 0; col < matrix2.numCols; col++) {
-          const colElements = matrix2ElementsByCol[col] || [];
-          const matchingElement = colElements.find(e => e.row === element.col); // matching row in matrix2's column
-          
-          if (matchingElement) {
-              const existingElement = resultMatrix.elements.find(e => e.row === element.row && e.col === col);
-              const newValue = element.value * matchingElement.value;
-              
-              if (existingElement) {
-                  existingElement.value += newValue; // accumulate value
-              } else {
-                  resultMatrix.elements.push({
-                      row: element.row,
-                      col: col,
-                      value: newValue,
-                  });
-              }
-          }
-      }
+    const value2 = matrix2Elements[`${element.row},${element.col}`] || 0;
+    resultMatrix.elements.push({
+      row: element.row,
+      col: element.col,
+      value: element.value - value2,
+    });
   }
 
   return resultMatrix;
 };
 
+const multiplyMatrices = (matrix1, matrix2) => {
+  if (matrix1.numCols !== matrix2.numRows) {
+    throw new Error(
+      "Matrix1 number of columns must be equal to matrix2 number of rows"
+    );
+  }
+
+  const resultMatrix = {
+    numRows: matrix1.numRows,
+    numCols: matrix2.numCols,
+    elements: [],
+  };
+  const matrix2Elements = matrix2.elements.reduce((acc, element) => {
+    acc[`${element.row},${element.col}`] = element.value;
+    return acc;
+  }, {});
+
+  for (const element of matrix1.elements) {
+    const value2 = matrix2Elements[`${element.row},${element.col}`] || 0;
+    resultMatrix.elements.push({
+      row: element.row,
+      col: element.col,
+      value: element.value * value2,
+    });
+  }
+
+  return resultMatrix;
+};
+
+const transposeMatrix = (matrix) => {
+  const transposeMatrix = {
+    numRows: matrix.numCols,
+    numCols: matrix.numRows,
+    elements: [],
+  };
+  const matrixElements = matrix.elements.reduce((acc, element) => {
+    acc[`${element.row},${element.col}`] = element.value;
+    return acc;
+  }, {});
+  for (const element of matrix.elements) {
+    transposeMatrix.elements.push({
+      row: element.col,
+      col: element.row,
+      value: element.value,
+    });
+  }
+  return transposeMatrix;
+};
 
 exports.readMatrixFromFile = readMatrixFromFile;
 exports.addMatrices = addMatrices;
 exports.subtractMatrices = subtractMatrices;
 exports.multiplyMatrices = multiplyMatrices;
+exports.transposeMatrix = transposeMatrix;
